@@ -598,6 +598,24 @@ def test_gaussian_mixture_fit_predict(seed, max_iter, tol):
         assert_greater(adjusted_rand_score(Y, Y_pred2), .95)
 
 
+def test_gaussian_mixture_fit_predict_n_init():
+    # Test that fit_predict(X) and predict(X) are consistent when n_init > 1
+    # This addresses the issue where fit_predict and predict disagree when n_init > 1
+    rng = np.random.RandomState(0)
+    n_samples, n_features, n_components = 100, 5, 3
+    X = rng.randn(n_samples, n_features)
+    
+    for n_init in [1, 3, 5]:  # Test various n_init values
+        g = GaussianMixture(n_components=n_components, n_init=n_init, 
+                           random_state=rng)
+        
+        # Check that fit_predict(X) is equivalent to fit(X).predict(X)  
+        f = copy.deepcopy(g)
+        Y_pred1 = f.fit(X).predict(X)
+        Y_pred2 = g.fit_predict(X)
+        assert_array_equal(Y_pred1, Y_pred2)
+
+
 def test_gaussian_mixture_fit():
     # recover the ground truth
     rng = np.random.RandomState(0)
